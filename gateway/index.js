@@ -9,14 +9,13 @@ const app = express();
 
 app.use(cors());
 
-
 // Middleware de autenticación JWT
 const verificarJWT = (req, res, next) => {
   const auth = req.headers.authorization;
 
   if (!auth || !auth.startsWith('Bearer ')) {
     return res.status(401).json({
-      error: 'Token requerido'
+      error: 'Token requerido',
     });
   }
 
@@ -32,16 +31,16 @@ const verificarJWT = (req, res, next) => {
     req.headers['x-user-email'] = payload.email;
 
     next();
-
   } catch (err) {
     return res.status(401).json({
-      error: 'Token inválido o expirado'
+      error: 'Token inválido o expirado',
     });
   }
 };
 
+// RUTAS PÚBLICAS
 
-// Rutas PÚBLICAS
+// POST /api/users/register
 app.post(
   '/api/users/register',
   createProxyMiddleware({
@@ -49,20 +48,22 @@ app.post(
     changeOrigin: true,
 
     pathRewrite: {
-      '^/api/users': ''
+      '^/api/users': '',
     },
 
     on: {
       error: (err, req, res) => {
+        console.error('Error ms-usuarios:', err.message);
+
         res.status(502).json({
-          error: 'Error al conectar con ms-usuarios'
+          error: 'Error al conectar con ms-usuarios',
         });
-      }
-    }
+      },
+    },
   })
 );
 
-
+// POST /api/users/login
 app.post(
   '/api/users/login',
   createProxyMiddleware({
@@ -70,21 +71,23 @@ app.post(
     changeOrigin: true,
 
     pathRewrite: {
-      '^/api/users': ''
+      '^/api/users': '',
     },
 
     on: {
       error: (err, req, res) => {
+        console.error('Error ms-usuarios:', err.message);
+
         res.status(502).json({
-          error: 'Error al conectar con ms-usuarios'
+          error: 'Error al conectar con ms-usuarios',
         });
-      }
-    }
+      },
+    },
   })
 );
 
+// RUTAS DE USUARIOS PROTEGIDAS
 
-// Rutas PROTEGIDAS
 app.use(
   '/api/users',
   verificarJWT,
@@ -94,19 +97,22 @@ app.use(
     changeOrigin: true,
 
     pathRewrite: {
-      '^/api/users': ''
+      '^/api/users': '',
     },
 
     on: {
       error: (err, req, res) => {
+        console.error('Error ms-usuarios:', err.message);
+
         res.status(502).json({
-          error: 'Error al conectar con ms-usuarios'
+          error: 'Error al conectar con ms-usuarios',
         });
-      }
-    }
+      },
+    },
   })
 );
 
+// RUTAS DE PRODUCTOS PROTEGIDAS
 
 app.use(
   '/api/products',
@@ -116,19 +122,25 @@ app.use(
     target: process.env.PRODUCTOS_URL,
     changeOrigin: true,
 
+    pathRewrite: {
+      '^/api/products': '',
+    },
+
     on: {
       error: (err, req, res) => {
+        console.error('Error ms-productos:', err.message);
+
         res.status(502).json({
-          error: 'Error al conectar con ms-productos'
+          error: 'Error al conectar con ms-productos',
         });
-      }
-    }
+      },
+    },
   })
 );
 
+// Puerto
+const PORT = process.env.PORT || 3000;
 
-app.listen(process.env.PORT, () => {
-  console.log(
-    `Gateway corriendo en puerto ${process.env.PORT}`
-  );
+app.listen(PORT, () => {
+  console.log(`Gateway corriendo en puerto ${PORT}`);
 });
